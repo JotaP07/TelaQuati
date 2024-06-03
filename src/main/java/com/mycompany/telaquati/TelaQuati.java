@@ -288,7 +288,7 @@ public class TelaQuati extends javax.swing.JFrame {
 
       // }
        
-    }
+    }//
     
     /**
      * @param args the command line arguments
