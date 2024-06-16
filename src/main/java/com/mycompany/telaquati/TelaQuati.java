@@ -4,6 +4,12 @@
  */
 package com.mycompany.telaquati;
 
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDarkerIJTheme;
+import com.mycompany.db.ConexaoBanco;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -19,6 +25,111 @@ public class TelaQuati extends javax.swing.JFrame {
      */
     public TelaQuati() {
         initComponents();
+        carregarTabela();
+    }
+
+    private void carregarTabela() {
+        DefaultTableModel modelo = (DefaultTableModel) TbQuati.getModel();
+        modelo.setRowCount(0); // Limpa a tabela
+
+        ConexaoBanco conexaoBanco = new ConexaoBanco();
+        if (conexaoBanco.conectar()) {
+            try (Connection conexao = conexaoBanco.getConnection()) {
+                String sql = "SELECT nome, email, nickname, senha FROM cadastroTela";
+                PreparedStatement ps = conexao.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    String nome = rs.getString("nome");
+                    String email = rs.getString("email");
+                    String nickname = rs.getString("nickname");
+                    String senha = rs.getString("senha");
+                    modelo.addRow(new Object[]{nome, email, nickname, senha});
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao carregar dados: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void adicionarUsuario() {
+        String nome = jvNome.getText();
+        String email = jvEmail.getText();
+        String nickname = jvNickName.getText();
+        String senha = new String(jvSenha.getPassword());
+
+        ConexaoBanco conexaoBanco = new ConexaoBanco();
+        if (conexaoBanco.conectar()) {
+            try (Connection conexao = conexaoBanco.getConnection()) {
+                String sql = "INSERT INTO cadastroTela (nome, email, nickname, senha) VALUES (?, ?, ?, ?)";
+                PreparedStatement ps = conexao.prepareStatement(sql);
+                ps.setString(1, nome);
+                ps.setString(2, email);
+                ps.setString(3, nickname);
+                ps.setString(4, senha);
+                ps.executeUpdate();
+                carregarTabela();
+                limparCampos();
+                JOptionPane.showMessageDialog(this, "Usuário cadastrado com sucesso!");
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao cadastrar usuário: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void alterarUsuario() {
+        String nome = jvNome.getText();
+        String email = jvEmail.getText();
+        String nickname = jvNickName.getText();
+        String senha = new String(jvSenha.getPassword());
+        int selectedRow = TbQuati.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um usuário para alterar.");
+            return;
+        }
+        String oldEmail = TbQuati.getValueAt(selectedRow, 1).toString();
+
+        ConexaoBanco conexaoBanco = new ConexaoBanco();
+        if (conexaoBanco.conectar()) {
+            try (Connection conexao = conexaoBanco.getConnection()) {
+                String sql = "UPDATE cadastroTela SET nome = ?, email = ?, nickname = ?, senha = ? WHERE email = ?";
+                PreparedStatement ps = conexao.prepareStatement(sql);
+                ps.setString(1, nome);
+                ps.setString(2, email);
+                ps.setString(3, nickname);
+                ps.setString(4, senha);
+                ps.setString(5, oldEmail);
+                ps.executeUpdate();
+                carregarTabela();
+                limparCampos();
+                JOptionPane.showMessageDialog(this, "Usuário alterado com sucesso!");
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao alterar usuário: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void removerUsuario() {
+        int selectedRow = TbQuati.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um usuário para remover.");
+            return;
+        }
+        String email = TbQuati.getValueAt(selectedRow, 1).toString();
+
+        ConexaoBanco conexaoBanco = new ConexaoBanco();
+        if (conexaoBanco.conectar()) {
+            try (Connection conexao = conexaoBanco.getConnection()) {
+                String sql = "DELETE FROM cadastroTela WHERE email = ?";
+                PreparedStatement ps = conexao.prepareStatement(sql);
+                ps.setString(1, email);
+                ps.executeUpdate();
+                carregarTabela();
+                limparCampos();
+                JOptionPane.showMessageDialog(this, "Usuário removido com sucesso!");
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao remover usuário: " + ex.getMessage());
+            }
+        }
     }
 
     /**
@@ -30,30 +141,75 @@ public class TelaQuati extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPasswordField1 = new javax.swing.JPasswordField();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        jMenu2 = new javax.swing.JMenu();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jvNome = new javax.swing.JTextField();
         jvEmail = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
-        jLabel15 = new javax.swing.JLabel();
-        jvLogin = new javax.swing.JTextField();
-        jvSenha = new javax.swing.JTextField();
         jLabel16 = new javax.swing.JLabel();
         jbAdicionar = new javax.swing.JButton();
         jbAlterar = new javax.swing.JButton();
         jbRemover = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         TbQuati = new javax.swing.JTable();
-        jvLocalidade = new javax.swing.JComboBox<>();
-        jLabel14 = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
-        jvData = new javax.swing.JFormattedTextField();
+        jvNickName = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jvSenha = new javax.swing.JPasswordField();
+
+        jPasswordField1.setText("jPasswordField1");
+
+        jMenu1.setText("File");
+        jMenuBar1.add(jMenu1);
+
+        jMenu2.setText("Edit");
+        jMenuBar1.add(jMenu2);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setBackground(new java.awt.Color(255, 255, 255));
+        setResizable(false);
 
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setPreferredSize(new java.awt.Dimension(720, 600));
+
+        jPanel2.setBackground(new java.awt.Color(40, 40, 40));
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 153, 0), 2));
+
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("CADASTRO QUATI");
 
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel2)
+                .addGap(250, 250, 250))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(22, 22, 22)
+                .addComponent(jLabel2)
+                .addContainerGap(22, Short.MAX_VALUE))
+        );
+
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(40, 40, 40));
         jLabel3.setText("Nome ");
+
+        jvNome.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jvNomeActionPerformed(evt);
+            }
+        });
 
         jvEmail.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -66,12 +222,17 @@ public class TelaQuati extends javax.swing.JFrame {
             }
         });
 
+        jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(40, 40, 40));
         jLabel7.setText("E-mail");
 
-        jLabel15.setText("Login/Usuario");
-
+        jLabel16.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel16.setForeground(new java.awt.Color(40, 40, 40));
         jLabel16.setText("Senha");
 
+        jbAdicionar.setBackground(new java.awt.Color(40, 40, 40));
+        jbAdicionar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jbAdicionar.setForeground(new java.awt.Color(255, 255, 255));
         jbAdicionar.setText("ADICIONAR");
         jbAdicionar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -79,6 +240,9 @@ public class TelaQuati extends javax.swing.JFrame {
             }
         });
 
+        jbAlterar.setBackground(new java.awt.Color(40, 40, 40));
+        jbAlterar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jbAlterar.setForeground(new java.awt.Color(255, 255, 255));
         jbAlterar.setText("ALTERAR");
         jbAlterar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -86,6 +250,9 @@ public class TelaQuati extends javax.swing.JFrame {
             }
         });
 
+        jbRemover.setBackground(new java.awt.Color(40, 40, 40));
+        jbRemover.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jbRemover.setForeground(new java.awt.Color(255, 255, 255));
         jbRemover.setText("REMOVER");
         jbRemover.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -98,103 +265,123 @@ public class TelaQuati extends javax.swing.JFrame {
 
             },
             new String [] {
-                "NOME", "D.NASC.", "E-MAIL", "LOCALIDADE", "LOGIN", "SENHA"
+                "NOME", "E-MAIL", "NICKNAME", "SENHA"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         TbQuati.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 TbQuatiMouseClicked(evt);
             }
         });
         jScrollPane1.setViewportView(TbQuati);
-
-        jvLocalidade.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Afeganistão", "África do Sul", "Albânia", "Alemanha", "Andorra", "Angola", "Antígua e Barbuda", "Arábia Saudita", "Argélia", "Argentina", "Armênia", "Austrália", "Áustria", "Azerbaijão", "Bahamas", "Bangladesh", "Barbados", "Barém", "Bélgica", "Belize", "Benim", "Bielorrússia", "Bolívia", "Bósnia e Herzegovina", "Botsuana", "Brasil", "Brunei", "Bulgária", "Burkina Faso", "Burundi", "Butão", "Cabo Verde", "Camarões", "Camboja", "Canadá", "Catar", "Cazaquistão", "Chade", "Chile", "China", "Chipre", "Colômbia", "Comores", "Congo-Brazzaville", "Congo-Kinshasa", "Coreia do Norte", "Coreia do Sul", "Costa do Marfim", "Costa Rica", "Croácia", "Cuba", "Dinamarca", "Dominica", "Egito", "El Salvador", "Emirados Árabes Unidos", "Equador", "Eritreia", "Eslováquia", "Eslovênia", "Espanha", "Estados Unidos", "Estônia", "Eswatini", "Etiópia", "Fiji", "Filipinas", "Finlândia", "França", "Gabão", "Gâmbia", "Gana", "Geórgia", "Granada", "Grécia", "Guatemala", "Guiana", "Guiné", "Guiné-Bissau", "Guiné Equatorial", "Haiti", "Honduras", "Hungria", "Iémen", "Ilhas Marechal", "Ilhas Salomão", "Índia", "Indonésia", "Irã", "Iraque", "Irlanda", "Islândia", "Israel", "Itália", "Jamaica", "Japão", "Jordânia", "Kosovo", "Kuwait", "Laos", "Lesoto", "Letônia", "Líbano", "Libéria", "Líbia", "Liechtenstein", "Lituânia", "Luxemburgo", "Macedônia do Norte", "Madagáscar", "Malásia", "Maláui", "Maldivas", "Mali", "Malta", "Marrocos", "Maurícia", "Mauritânia", "México", "Mianmar", "Micronésia", "Moçambique", "Moldávia", "Mônaco", "Mongólia", "Montenegro", "Namíbia", "Nauru", "Nepal", "Nicarágua", "Níger", "Nigéria", "Noruega", "Nova Zelândia", "Omã", "Países Baixos", "Palau", "Palestina", "Panamá", "Papua-Nova Guiné", "Paquistão", "Paraguai", "Peru", "Polônia", "Portugal", "Quênia", "Quirguistão", "Reino Unido", "República Centro-Africana", "República Dominicana", "República Tcheca", "Romênia", "Ruanda", "Rússia", "Samoa", "San Marino", "Santa Lúcia", "São Cristóvão e Neves", "São Tomé e Príncipe", "São Vicente e Granadinas", "Seicheles", "Senegal", "Serra Leoa", "Sérvia", "Singapura", "Síria", "Somália", "Sri Lanka", "Suazilândia", "Sudão", "Sudão do Sul", "Suécia", "Suíça", "Suriname", "Tailândia", "Taiwan", "Tajiquistão", "Tanzânia", "Timor-Leste", "Togo", "Tonga", "Trinidad e Tobago", "Tunísia", "Turcomenistão", "Turquia", "Tuvalu", "Ucrânia", "Uganda", "Uruguai", "Uzbequistão", "Vanuatu", "Vaticano", "Venezuela", "Vietnã", "Zâmbia", "Zimbábue" }));
-        jvLocalidade.setSelectedIndex(-1);
-
-        jLabel14.setText("Localidade");
-
-        jLabel17.setText("Data de Nascimento");
-
-        try {
-            jvData.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.MaskFormatter("##/##/####")));
-        } catch (java.text.ParseException ex) {
-            ex.printStackTrace();
+        if (TbQuati.getColumnModel().getColumnCount() > 0) {
+            TbQuati.getColumnModel().getColumn(0).setResizable(false);
+            TbQuati.getColumnModel().getColumn(1).setResizable(false);
+            TbQuati.getColumnModel().getColumn(2).setResizable(false);
+            TbQuati.getColumnModel().getColumn(3).setResizable(false);
         }
+
+        jvNickName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jvNickNameActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel4.setForeground(new java.awt.Color(40, 40, 40));
+        jLabel4.setText("Nickname");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(2, 2, 2)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(2, 2, 2))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jvNickName, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addContainerGap(82, Short.MAX_VALUE)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jvNome, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel3))))
+                        .addGap(18, 18, 18))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jbAdicionar, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel7)
+                    .addComponent(jvEmail)
+                    .addComponent(jLabel16)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jbAlterar, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jbRemover, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jvSenha, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE))
+                .addGap(74, 74, 74))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(2, 2, 2)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel7))
+                .addGap(5, 5, 5)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jvEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jvNome, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel16))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jvNickName, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
+                    .addComponent(jvSenha))
+                .addGap(30, 30, 30)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jbRemover, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jbAlterar, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jbAdicionar, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(249, 249, 249)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(41, 41, 41)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jScrollPane1)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel15)
-                                .addComponent(jvEmail, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
-                                .addComponent(jvNome)
-                                .addComponent(jvLogin))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel17)
-                                .addComponent(jvData, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jvLocalidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel14)
-                                .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jvSenha, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(200, 200, 200)
-                            .addComponent(jbAdicionar, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jbAlterar, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jbRemover, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(47, Short.MAX_VALUE))
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 714, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel2)
-                .addGap(14, 14, 14)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel17))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jvNome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jvData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel14))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jvEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jvLocalidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel15)
-                    .addComponent(jLabel16))
-                .addGap(11, 11, 11)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jvLogin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jvSenha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jbAlterar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jbAdicionar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jbRemover, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 608, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -204,8 +391,8 @@ public class TelaQuati extends javax.swing.JFrame {
 
     private void jvEmailFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jvEmailFocusLost
         // TODO add your handling code here:
-        if (!(Pattern.matches("^[a-zA-Z0-9]+[@]{1}+[a-zA-Z0-9]+[.]{1}+[a-zA-Z0-9]+$", jvEmail.getText())))
-        {
+        String emailPattern = "^[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,}$";
+        if (!Pattern.matches(emailPattern, jvEmail.getText())) {
             JOptionPane.showMessageDialog(null, "Por favor, digite um e-mail válido", "Error", JOptionPane.ERROR_MESSAGE);
             jvEmail.requestFocus();
         }
@@ -213,83 +400,52 @@ public class TelaQuati extends javax.swing.JFrame {
 
     private void jvEmailKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jvEmailKeyPressed
         // TODO add your handling code here:
-        if(evt.getExtendedKeyCode() == evt.VK_ENTER){
+        if (evt.getExtendedKeyCode() == evt.VK_ENTER) {
             jbAdicionar.requestFocus();
         }
     }//GEN-LAST:event_jvEmailKeyPressed
 
     private void jbAdicionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAdicionarActionPerformed
         // TODO add your handling code here:
-        if((jvNome.getText().trim().isEmpty())
-            || (jvData.getText().trim().isEmpty())
-            || (jvEmail.getText().trim().isEmpty())
-            || (jvLocalidade.getSelectedIndex() < 0)
-            || (jvLogin.getText().trim().isEmpty())
-            || (jvSenha.getText().trim().isEmpty())){
-            JOptionPane.showMessageDialog(null, "Dados Inválidos");
-        }else{
-            DefaultTableModel tbcadastro = (DefaultTableModel) TbQuati.getModel();
-            Object [] dados = {jvNome.getText(), jvData.getText(), jvEmail.getText(), jvLocalidade.getSelectedItem().toString(),jvLogin.getText(), jvSenha.getText()};
-            tbcadastro.addRow(dados);
-
-            limparCampos();
-        }
+        adicionarUsuario();
     }//GEN-LAST:event_jbAdicionarActionPerformed
 
     private void jbAlterarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAlterarActionPerformed
         // TODO add your handling code here:
-        if(TbQuati.getSelectedRow() != -1) {
-            TbQuati.setValueAt(jvNome.getText(), TbQuati.getSelectedRow(), 0);
-            TbQuati.setValueAt(jvData.getText(), TbQuati.getSelectedRow(), 1);
-            TbQuati.setValueAt(jvEmail.getText(), TbQuati.getSelectedRow(), 2);
-            TbQuati.setValueAt(jvLocalidade.getSelectedItem().toString(), TbQuati.getSelectedRow(), 3);
-            TbQuati.setValueAt(jvLogin.getText(), TbQuati.getSelectedRow(), 4);
-            TbQuati.setValueAt(jvSenha.getText(), TbQuati.getSelectedRow(), 5);
-            limparCampos();
-        }else{
-            JOptionPane.showMessageDialog(null, "Selecione um Cadastro para Alterar!");
-        }
+        alterarUsuario();
     }//GEN-LAST:event_jbAlterarActionPerformed
 
     private void jbRemoverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbRemoverActionPerformed
         // TODO add your handling code here:
-        if(TbQuati.getSelectedRow() != -1){
-            DefaultTableModel tbadicionado = (DefaultTableModel) TbQuati.getModel();
-            tbadicionado.removeRow((TbQuati.getSelectedRow()));
-            limparCampos();
-        }else{
-            JOptionPane.showMessageDialog(null, "Selecione um Cadastro para excluir!");
-        }
+        removerUsuario();
     }//GEN-LAST:event_jbRemoverActionPerformed
 
     private void TbQuatiMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TbQuatiMouseClicked
         // TODO add your handling code here:
-        if(TbQuati.getSelectedRow() != -1){
-            jvNome.setText(TbQuati.getValueAt(TbQuati.getSelectedRow(),0).toString());
-            jvData.setText(TbQuati.getValueAt(TbQuati.getSelectedRow(),1).toString());
-            jvEmail.setText(TbQuati.getValueAt(TbQuati.getSelectedRow(), 2).toString());
-            jvLocalidade.setSelectedItem(TbQuati.getValueAt(TbQuati.getSelectedRow(),3).toString());
-            jvLogin.setText(TbQuati.getValueAt(TbQuati.getSelectedRow(),4).toString());
-            jvSenha.setText(TbQuati.getValueAt(TbQuati.getSelectedRow(),5).toString());
-        }
+        int selectedRow = TbQuati.getSelectedRow();
+        jvNome.setText(TbQuati.getValueAt(selectedRow, 0).toString());
+        jvEmail.setText(TbQuati.getValueAt(selectedRow, 1).toString());
+        jvNickName.setText(TbQuati.getValueAt(selectedRow, 2).toString());
+        jvSenha.setText(TbQuati.getValueAt(selectedRow, 3).toString());
     }//GEN-LAST:event_TbQuatiMouseClicked
 
-    
-            private void limparCampos()
-    {
-     //  if(!(jcSexo.get().trim().isEmpty())){ 
-          jvNome.requestFocus();
-          jvLocalidade.setSelectedIndex(-1);
-          jvData.setText("");
-          jvLogin.setText("");
-          jvNome.setText("");
-          jvEmail.setText("");
-          jvSenha.setText("");
+    private void jvNomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jvNomeActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jvNomeActionPerformed
 
-      // }
-       
+    private void jvNickNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jvNickNameActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jvNickNameActionPerformed
+
+    private void limparCampos() {
+        jvNome.requestFocus();
+        jvNome.setText("");
+        jvEmail.setText("");
+        jvSenha.setText("");
+        jvNickName.setText("");
+
     }//
-    
+
     /**
      * @param args the command line arguments
      */
@@ -316,6 +472,7 @@ public class TelaQuati extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(TelaQuati.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        FlatMaterialDarkerIJTheme.setup();
         //</editor-fold>
 
         /* Create and display the form */
@@ -328,22 +485,24 @@ public class TelaQuati extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable TbQuati;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPasswordField jPasswordField1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton jbAdicionar;
     private javax.swing.JButton jbAlterar;
     private javax.swing.JButton jbRemover;
-    private javax.swing.JFormattedTextField jvData;
     private javax.swing.JTextField jvEmail;
-    private javax.swing.JComboBox<String> jvLocalidade;
-    private javax.swing.JTextField jvLogin;
+    private javax.swing.JTextField jvNickName;
     private javax.swing.JTextField jvNome;
-    private javax.swing.JTextField jvSenha;
+    private javax.swing.JPasswordField jvSenha;
     // End of variables declaration//GEN-END:variables
 }
