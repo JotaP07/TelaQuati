@@ -472,7 +472,7 @@ public class TelaQuati extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(TelaQuati.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        FlatMaterialDarkerIJTheme.setup();
+        FlatMaterialDarkerIJTheme.setup();//biblioteca que estou usando
         //</editor-fold>
 
         /* Create and display the form */
